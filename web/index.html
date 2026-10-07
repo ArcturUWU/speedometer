@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b12">
+  <meta name="description" content="Локальный измеритель скорости интернета: 10 последовательных загрузок, реальный объём данных и прозрачный результат.">
+  <title>M / Speedometer — скорость твоего интернета</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#test-form">Перейти к запуску теста</a>
+  <div class="ambient ambient-blue" aria-hidden="true"></div>
+  <div class="ambient ambient-red" aria-hidden="true"></div>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="M Speedometer, главная">
+        <span class="m-mark" aria-hidden="true"><i></i><i></i><i></i><b>M</b></span>
+        <span class="brand-word">SPEEDOMETER<span class="brand-sub">INTERNET PERFORMANCE</span></span>
+      </a>
+      <div class="connection-pill" id="connection-pill"><span class="status-dot"></span><span id="connection-text">Подключение…</span><span class="local-tag">LOCAL</span></div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div><p class="eyebrow">ТВОЙ ИНТЕРНЕТ. ТВОЯ СКОРОСТЬ.</p><h1 id="page-title">Проверим, на что он способен<span>.</span></h1></div>
+        <p class="intro-note"><span class="tiny-stripes" aria-hidden="true"><i></i><i></i><i></i></span>10 загрузок подряд.<br>Реальные данные. Честный результат.</p>
+      </section>
+
+      <section class="cockpit" id="cockpit" aria-label="Приборная панель измерения скорости">
+        <div class="cockpit-grain" aria-hidden="true"></div>
+        <div class="gauge-art" aria-hidden="true">
+          <svg class="instrument-svg" viewBox="0 0 1100 390" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="blueTrace" x1="30" y1="330" x2="490" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#48eaff"/><stop offset=".48" stop-color="#0998ff"/><stop offset="1" stop-color="#596bff"/></linearGradient>
+              <linearGradient id="redTrace" x1="630" y1="60" x2="1080" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#ff6b81"/><stop offset=".6" stop-color="#ff2059"/><stop offset="1" stop-color="#cd1540"/></linearGradient>
+              <linearGradient id="faceBlue" x1="75" y1="95" x2="480" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#0c2439"/><stop offset="1" stop-color="#0c101d"/></linearGradient>
+              <linearGradient id="faceRed" x1="620" y1="95" x2="1040" y2="320" gradientUnits="userSpaceOnUse"><stop stop-color="#17101d"/><stop offset="1" stop-color="#131320"/></linearGradient>
+              <linearGradient id="stripesFade" x1="500" y1="0" x2="570" y2="310" gradientUnits="userSpaceOnUse"><stop stop-color="white" stop-opacity=".22"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+              <mask id="stripeMask"><rect x="0" y="0" width="1100" height="390" fill="url(#stripesFade)"/></mask>
+              <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+            </defs>
+            <path d="M83 74H427L493 196L427 318H83L17 196L83 74Z" fill="url(#faceBlue)"/>
+            <path d="M673 74H1017L1083 196L1017 318H673L607 196L673 74Z" fill="url(#faceRed)"/>
+            <g mask="url(#stripeMask)"><path d="M397 58H486L335 333H246L397 58Z" fill="#54c6f4"/><path d="M496 58H585L434 333H345L496 58Z" fill="#3250e0"/><path d="M595 58H684L533 333H444L595 58Z" fill="#ea2449"/></g>
+            <path d="M87 87H420L479 196L420 305H87L28 196L87 87Z" stroke="#183550" stroke-width="1"/>
+            <path d="M680 87H1010L1070 196L1010 305H680L620 196L680 87Z" stroke="#352034" stroke-width="1"/>
+            <path class="blue-outline" d="M417 69H79L10 196L79 323H417" stroke="#174568" stroke-width="2"/>
+            <path class="red-outline" d="M683 69H1021L1090 196L1021 323H683" stroke="#60223a" stroke-width="2"/>
+            <path d="M420 335H76L0 196L76 57H420L496 196L420 335Z" stroke="#112138" stroke-width="1"/>
+            <path d="M680 335H1024L1100 196L1024 57H680L604 196L680 335Z" stroke="#2e1928" stroke-width="1"/>
+            <path id="speed-track" d="M92 324L22 196L92 68H411L481 196L411 324" stroke="#143248" stroke-width="5" stroke-linecap="round" pathLength="100"/>
+            <path id="speed-glow" class="gauge-glow" d="M92 324L22 196L92 68H411L481 196L411 324" stroke="url(#blueTrace)" stroke-width="8" stroke-linecap="round" filter="url(#glow)" pathLength="100" stroke-dasharray="0 100"/>
+            <path id="speed-fill" d="M92 324L22 196L92 68H411L481 196L411 324" stroke="url(#blueTrace)" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+            <path d="M689 324L619 196L689 68H1008L1078 196L1008 324" stroke="#44202e" stroke-width="5" stroke-linecap="round" pathLength="100"/>
+            <path id="progress-glow" class="gauge-glow" d="M689 324L619 196L689 68H1008L1078 196L1008 324" stroke="url(#redTrace)" stroke-width="8" stroke-linecap="round" filter="url(#glow)" pathLength="100" stroke-dasharray="0 100"/>
+            <path id="progress-fill" d="M689 324L619 196L689 68H1008L1078 196L1008 324" stroke="url(#redTrace)" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+            <g class="gauge-ticks" stroke="#4c768c"><path d="M87 309L100 301M72 280L85 272M56 251L69 244M41 222L54 215M41 169L54 176M56 140L69 147M72 111L85 118M106 79V91M165 79V91M224 79V91M283 79V91M342 79V91M398 79V91"/></g>
+            <g class="gauge-ticks red-ticks" stroke="#875363"><path d="M695 309L708 301M680 280L693 272M664 251L677 244M649 222L662 215M649 169L662 176M664 140L677 147M680 111L693 118M703 79V91M762 79V91M821 79V91M880 79V91M939 79V91M995 79V91"/></g>
+            <g class="scale-numbers" fill="#4f94bb" text-anchor="end"><text x="102" y="292">0</text><text x="85" y="261">100</text><text x="68" y="231">200</text><text x="68" y="169">400</text><text x="85" y="139">600</text><text x="102" y="108">800</text></g>
+            <text id="scale-max" class="scale-numbers" x="126" y="113" fill="#64b6e5">1000</text>
+            <g class="scale-numbers" fill="#aa617a" text-anchor="end"><text x="711" y="292">0</text><text x="694" y="261">2</text><text x="677" y="231">4</text><text x="677" y="169">6</text><text x="694" y="139">8</text><text x="711" y="108">10</text></g>
+            <path d="M491 157L550 124L609 157M491 235L550 268L609 235" stroke="#1c2638" stroke-width="1"/>
+            <path d="M520 193L535 177L543 185L555 164L579 193" stroke="#49a5cf" stroke-width="1.5"/>
+            <path d="M81 337H164" stroke="#50c4ff" stroke-width="3"/><path d="M169 337H209" stroke="#3156df" stroke-width="3"/><path d="M214 337H239" stroke="#f73558" stroke-width="3"/>
+            <path d="M861 337H886" stroke="#50c4ff" stroke-width="3"/><path d="M891 337H931" stroke="#3156df" stroke-width="3"/><path d="M936 337H1019" stroke="#f73558" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="instrument-readout speed-readout">
+          <p class="instrument-label">DOWNLOAD</p>
+          <div class="speed-number" id="speed-value">0<span>.0</span></div>
+          <div class="speed-unit">Мбит/с</div>
+          <div class="speed-caption" id="speed-caption">Готов к старту</div>
+        </div>
+        <div class="instrument-center"><span class="center-icon">↓</span><span class="center-label">DOWNLINK</span><span class="demo-badge" id="demo-badge" hidden>ДЕМО</span></div>
+        <div class="instrument-readout progress-readout">
+          <p class="instrument-label">TEST SEQUENCE</p>
+          <div class="progress-number"><span id="request-count">0</span><span class="progress-total">/ 10</span></div>
+          <div class="speed-unit progress-unit">запросов завершено</div>
+          <div class="gear-status" id="gear-status">READY</div>
+        </div>
+        <div class="cockpit-bottom"><div class="dashboard-status"><span class="status-light" id="status-light"></span><span id="status-text">Подключаемся к локальному серверу</span></div><span class="dashboard-right">SEQUENTIAL · 10 RUNS</span></div>
+      </section>
+
+      <section class="control-panel" aria-label="Настройки и запуск теста">
+        <form id="test-form" novalidate>
+          <div class="url-control"><label for="target-url">АДРЕС ДЛЯ ЗАГРУЗКИ</label><div class="input-wrap"><span class="input-icon" aria-hidden="true">↗</span><input id="target-url" type="url" inputmode="url" spellcheck="false" autocomplete="url" value="https://speed.cloudflare.com/__down?bytes=5000000" aria-describedby="url-note" required></div></div>
+          <button class="button-primary" id="start-button" type="submit"><span>Начать тест</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+          <button class="button-cancel" id="cancel-button" type="button" hidden><span>Остановить</span><span aria-hidden="true">■</span></button>
+        </form>
+        <div class="control-under"><p id="url-note">Можно вставить прямую ссылку на большой файл. По умолчанию — 5 МБ × 10.</p><button id="demo-button" type="button" class="button-text">Попробовать демо <span aria-hidden="true">→</span></button></div>
+        <div class="error-banner" id="error-banner" role="alert" hidden><span aria-hidden="true">!</span><p id="error-text"></p><button id="retry-button" type="button">Переподключить</button></div>
+      </section>
+
+      <section class="stats-grid" aria-label="Результаты измерения">
+        <div class="stat-card"><span class="stat-icon" aria-hidden="true">↓</span><div><p>Загружено данных</p><strong id="total-value">0.00</strong><span class="stat-unit">МБ</span></div><span class="stat-index">01</span></div>
+        <div class="stat-card"><span class="stat-icon" aria-hidden="true">◷</span><div><p>Среднее время запроса</p><strong id="average-value">0.00</strong><span class="stat-unit">сек</span></div><span class="stat-index">02</span></div>
+        <div class="stat-card"><span class="stat-icon" aria-hidden="true">↗</span><div><p>Средняя скорость загрузки</p><strong id="byte-rate-value">0.00</strong><span class="stat-unit">МБ/с</span></div><span class="stat-index">03</span></div>
+      </section>
+
+      <section class="results-panel" aria-labelledby="results-title">
+        <div class="results-head"><div><p class="eyebrow">КАЖДЫЙ ЗАПРОС НА ВИДУ</p><h2 id="results-title">Заезды <span id="results-subtitle">0 из 10</span></h2></div><button id="export-button" class="button-export" type="button" disabled><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1v9m-3-3 3 3 3-3M2 10v4h12v-4" stroke="currentColor" stroke-width="1.5"/></svg>Скачать JSON</button></div>
+        <div class="chart-wrap"><div class="chart-grid" aria-hidden="true"><span>Мбит/с</span><i></i><i></i><i></i></div><ol class="request-chart" id="request-chart" aria-label="Скорость каждого из десяти запросов"></ol></div>
+        <div class="chart-legend"><span><i class="legend-dot"></i>Успешная загрузка</span><span><i class="legend-dot failed-dot"></i>Ошибка запроса</span><span id="success-text">Ожидание первого запроса</span></div>
+        <details class="request-details"><summary>Подробности запросов <span aria-hidden="true">+</span></summary><div class="table-scroll"><table><caption class="sr-only">Результаты каждого запроса</caption><thead><tr><th>Запрос</th><th>Данные, МБ</th><th>Время, с</th><th>Мбит/с</th><th>Статус</th></tr></thead><tbody id="request-table"></tbody></table></div></details>
+      </section>
+      <p class="measurement-note">Один поток · измеряем только загрузку. Скорость = скачанные байты ÷ время успешных запросов. МБ = 1 000 000 байт. Результат зависит и от выбранного сервера, и от маршрута. Демо показывает интерфейс на вымышленных данных.</p>
+      <div class="sr-only" id="result-announcement" role="status" aria-live="polite" aria-atomic="true"></div>
+    </main>
+    <footer><span>M / SPEEDOMETER</span><span>Вдохновлён приборной панелью. Создан для интернета.</span><span class="footer-mark" aria-hidden="true"><i></i><i></i><i></i></span></footer>
+  </div>
+</body>
+</html>
