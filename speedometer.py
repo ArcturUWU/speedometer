@@ -8,6 +8,7 @@ import json
 import secrets
 import sys
 import threading
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -23,12 +24,16 @@ class Dashboard:
         self.lock = threading.Lock()
         self.cancel = threading.Event()
         self.token = secrets.token_urlsafe(32)
+        self.started_at = None
+        self.last_trace_sample = None
         self.state = self.ready()
 
     def ready(self):
         return {
             "id": 0, "status": "ready", "url": DEFAULT_URL,
             "index": 0, "live_mbps": 0, "samples": [], "error": None,
+            "elapsed_s": 0, "current_bytes": 0, "current_elapsed_s": 0,
+            "downloaded_bytes": 0, "trace": [],
             "stats": {"successful": 0, "failed": 0, "total_bytes": 0,
                       "total_seconds": 0, "avg_seconds": 0, "mbps": 0, "MBps": 0},
         }
@@ -37,8 +42,35 @@ class Dashboard:
         with self.lock:
             # Deep copy to avoid serializing a list while the worker changes it.
             result = json.loads(json.dumps(self.state))
+            if result["status"] == "running":
+                result["elapsed_s"] = self.elapsed()
             result["token"] = self.token
             return result
+
+    def elapsed(self):
+        return max(0.0, time.perf_counter() - self.started_at) if self.started_at is not None else 0.0
+
+    def record_transfer(self, data):
+        """Record measured payload only; setup callbacks are not zero-speed samples.
+
+        Called under the state lock. The meter emits the last successful payload
+        as both progress and sample, so that pair must produce just one point.
+        """
+        self.state["current_bytes"] = data["bytes"]
+        self.state["current_elapsed_s"] = data["elapsed_s"]
+        if data["bytes"] <= 0 or data["elapsed_s"] <= 0:
+            return
+        self.state["live_mbps"] = data["mbps"]
+        key = (data["index"], data["bytes"], data["elapsed_s"], data["mbps"])
+        if key == self.last_trace_sample:
+            return
+        trace = self.state["trace"]
+        timestamp = self.elapsed()
+        if trace:
+            timestamp = max(trace[-1]["t"], timestamp)
+        trace.append({"t": timestamp, "mbps": data["mbps"]})
+        del trace[:-240]
+        self.last_trace_sample = key
 
     def start(self, url):
         url = validate_url(url)
@@ -49,6 +81,8 @@ class Dashboard:
             self.cancel = threading.Event()
             self.state = self.ready()
             self.state.update(id=run_id, status="running", url=url)
+            self.started_at = time.perf_counter()
+            self.last_trace_sample = None
         threading.Thread(target=self.worker, args=(url, run_id, self.cancel), daemon=True).start()
 
     def worker(self, url, run_id, cancel):
@@ -59,11 +93,16 @@ class Dashboard:
                 if self.state["id"] != run_id:
                     return
                 if data["type"] == "progress":
-                    self.state.update(index=data["index"], live_mbps=data["mbps"])
+                    self.state["index"] = data["index"]
+                    self.record_transfer(data)
+                    self.state["downloaded_bytes"] = sum(s["bytes"] for s in self.state["samples"]) + data["bytes"]
                 elif data["type"] == "sample":
                     sample = data["sample"]
+                    self.record_transfer(sample)
                     self.state["samples"].append(sample)
                     self.state["index"] = sample["index"]
+                    # Partial failed downloads still consumed network traffic.
+                    self.state["downloaded_bytes"] = sum(s["bytes"] for s in self.state["samples"])
                     successful = [s for s in self.state["samples"] if s["error"] is None]
                     total_bytes = sum(s["bytes"] for s in successful)
                     total_seconds = sum(s["elapsed_s"] for s in successful)
@@ -85,13 +124,15 @@ class Dashboard:
                     return
                 self.state.update(result)
                 self.state["live_mbps"] = result["stats"]["mbps"]
+                self.state["elapsed_s"] = self.elapsed()
             stats = result["stats"]
             print(f'\n{result["status"].upper()} | {stats["successful"]}/10 successful | '
                   f'{stats["total_bytes"] / 1_000_000:.2f} MB | avg {stats["avg_seconds"]:.3f} s | '
                   f'{stats["MBps"]:.2f} MB/s ({stats["mbps"]:.2f} Mbps)\n', flush=True)
         except Exception as exc:
             with self.lock:
-                self.state.update(status="error", error=str(exc))
+                if self.state["id"] == run_id:
+                    self.state.update(status="error", error=str(exc), elapsed_s=self.elapsed())
             print(f"Test failed: {exc}", file=sys.stderr, flush=True)
 
 
@@ -140,7 +181,9 @@ class Handler(BaseHTTPRequestHandler):
                  "/index.html": ("index.html", "text/html; charset=utf-8"),
                  "/style.css": ("style.css", "text/css; charset=utf-8"),
                  "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-                 "/favicon.svg": ("favicon.svg", "image/svg+xml")}
+                 "/favicon.svg": ("favicon.svg", "image/svg+xml"),
+                 "/fonts/RobotoCondensed-Regular.woff2": ("fonts/RobotoCondensed-Regular.woff2", "font/woff2"),
+                 "/fonts/RobotoCondensed-Cyrillic.woff2": ("fonts/RobotoCondensed-Cyrillic.woff2", "font/woff2")}
         if route not in files:
             self.respond(404, {"error": "Not found"})
             return
